@@ -38,8 +38,8 @@ jobs:
               ./gradlew build
           else
               args=$(echo "${{ inputs.target_subproject }}" | tr ',' '\n' | sed 's/$/:build/' | paste -sd ' ')
-              echo "Building with arguments=$args"
-              ./gradlew $args
+              echo "Building with arguments=$args (configure-on-demand)"
+              ./gradlew --configure-on-demand $args
           fi
         env:
           BUILD_ID: ${{ github.run_number }}
