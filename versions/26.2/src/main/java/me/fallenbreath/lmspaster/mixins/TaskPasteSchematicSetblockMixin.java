@@ -28,11 +28,13 @@ import me.fallenbreath.lmspaster.network.ClientNetworkHandler;
 import net.minecraft.commands.arguments.blocks.BlockStateParser;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.util.ProblemReporter;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.ChunkAccess;
 import net.minecraft.world.level.chunk.LevelChunk;
+import net.minecraft.world.level.storage.TagValueOutput;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -133,7 +135,13 @@ public abstract class TaskPasteSchematicSetblockMixin
 			return;
 		}
 
-		CompoundTag tag = entity.saveWithoutId(new CompoundTag());
+		CompoundTag tag;
+		try (ProblemReporter.ScopedCollector reporter = new ProblemReporter.ScopedCollector(entity.problemPath(), LitematicaServerPasterMod.LOGGER))
+		{
+			TagValueOutput output = TagValueOutput.createWithContext(reporter, entity.registryAccess());
+			entity.saveWithoutId(output);
+			tag = output.buildResult();
+		}
 		tag.remove("UUIDMost");
 		tag.remove("UUIDLeast");
 		tag.remove("UUID");
